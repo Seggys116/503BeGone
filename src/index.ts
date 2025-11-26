@@ -62,7 +62,7 @@ async function handleRequest(req: Request): Promise<Response> {
                 : await file.arrayBuffer();
 
             return new Response(content, {
-                status: 503,
+                status: 200,
                 headers: {
                     "Content-Type": contentType,
                     "Retry-After": "3600",
@@ -81,7 +81,7 @@ async function handleRequest(req: Request): Promise<Response> {
             const content = await file.text();
 
             return new Response(content, {
-                status: 503,
+                status: 200,
                 headers: {
                     "Content-Type": defaultPage.contentType,
                     "Retry-After": "3600",
@@ -100,7 +100,7 @@ async function handleRequest(req: Request): Promise<Response> {
             message: "No maintenance page configured for this domain",
         }),
         {
-            status: 503,
+            status: 200,
             headers: {
                 "Content-Type": "application/json",
                 "Retry-After": "3600",

@@ -1,6 +1,7 @@
 import { join } from "path";
 import { scanPages, watchPages } from "./fileScanner";
 import { findMatch, findDefaultPage } from "./router";
+import { isTextFile } from "./mimeTypes";
 import type { Route } from "./types";
 
 const PORT = parseInt(process.env.PORT || "3000", 10);
@@ -17,7 +18,8 @@ async function loadRoutes(): Promise<void> {
 
   console.log(`Loaded ${routes.length} routes:`);
   for (const route of routes) {
-    console.log(`  ${route.pattern}${route.path === "/" ? "" : route.path} -> ${route.filePath}`);
+    const typeLabel = route.isStaticSite ? "[static-site]" : "[file]";
+    console.log(`  ${typeLabel} ${route.pattern}${route.path === "/" ? "" : route.path} -> ${route.filePath}`);
   }
 
   if (defaultPage) {
@@ -46,17 +48,25 @@ async function handleRequest(req: Request): Promise<Response> {
 
   console.log(`${req.method} ${host}${path}`);
 
-  const match = findMatch(routes, host, path);
+  const match = await findMatch(routes, host, path);
 
   if (match) {
     try {
       const file = Bun.file(match.filePath);
-      const content = await file.text();
+      const contentType = match.contentType;
+
+      // Use arrayBuffer for binary files, text for text files
+      let content: ArrayBuffer | string;
+      if (isTextFile(contentType)) {
+        content = await file.text();
+      } else {
+        content = await file.arrayBuffer();
+      }
 
       return new Response(content, {
         status: 503,
         headers: {
-          "Content-Type": match.route.contentType,
+          "Content-Type": contentType,
           "Retry-After": "3600",
           "Cache-Control": "no-store, no-cache, must-revalidate",
           "X-503BeGone-Match": match.route.pattern,

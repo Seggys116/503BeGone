@@ -49,6 +49,40 @@ pages/
       health.json                # example.com/api/health
 ```
 
+### Static Site Support (Next.js, Vite, etc.)
+
+You can serve full static site builds (Next.js export, Vite, Create React App, etc.) as maintenance pages. Any folder containing an `index.html` at its root is treated as a static site:
+
+```
+pages/
+  myapp.com/                     # Full static site for myapp.com
+    index.html                   # Home page
+    about/
+      index.html                 # About page
+    _next/                       # Next.js assets
+      static/
+        chunks/
+          *.js
+    styles.css
+```
+
+Static sites support:
+- All file types (JS, CSS, images, fonts, etc.)
+- File-based routing (`/about` -> `/about/index.html` or `/about.html`)
+- SPA fallback (unknown routes return `index.html` for client-side routing)
+- Proper MIME types for all assets
+
+**Example: Using a Next.js static export**
+
+```bash
+# Build your Next.js app with static export
+cd my-nextjs-app
+npm run build    # with output: 'export' in next.config.js
+
+# Copy the output to pages directory
+cp -r out ../503begone/pages/mysite.com
+```
+
 ### Matching Priority
 
 Routes are matched from most specific to least specific:
@@ -62,8 +96,16 @@ Routes are matched from most specific to least specific:
 
 ### Supported File Types
 
+Single-file routes support:
 - `.html` - Served as `text/html`
 - `.json` - Served as `application/json`
+
+Static sites support all common web file types:
+- HTML, CSS, JavaScript
+- Images (PNG, JPG, GIF, SVG, WebP, AVIF, ICO)
+- Fonts (WOFF, WOFF2, TTF, OTF, EOT)
+- Media (MP4, WebM, MP3, WAV, OGG)
+- Other (PDF, WASM, source maps)
 
 ## Configuration
 
